@@ -16,6 +16,7 @@ class KestrelConnection(kestrel.Client):
 
     def __init__(self, lock):
         super(KestrelConnection, self).__init__(KESTREL_SERVERS)
+        self.flush_all()
         self.lock = lock
 
     def fetch_from(self, queue_name):

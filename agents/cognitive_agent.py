@@ -1,34 +1,34 @@
-from resources.constants import MESSAGES, ENVIRONMENT
-from resources.kestrel_connection import KestrelConnection
+from resources.constants import ENVIRONMENT
+
 
 
 class CognitiveAgent():
 
-    def __init__(self, name, x, y, color, lock):
+    def __init__(self, name, x, y, color, stdout_lock, queue_system):
         self.points = 0
         self.carry_tile = None
         self.name = 'A%s' % name
         self.x = x
         self.y = y
         self.color = color
-        self.queue_system = KestrelConnection(lock)
-        self.lock = lock
+        self.queue_system = queue_system
+        self.stdout_lock = stdout_lock
 
     def __unicode__(self):
         return '<%s, (%s,%s) -> %s>' % (self.name, self.x, self.y, self.color)
 
     def run(self):
         self.request_entire_state()
-#        # wait for entire state response
-#        while True:
-#            if self.queue_system.peek(self.name):
-#                message = self.queue_system.fetch_from(self.name)
-#                if message and message['type'] == 'response_entire_state':
-#                    grid = message['grid']
-#                    break
-#
-#        # get the most efficient plan
-#        plans = self.get_most_efficient_plan(grid)
+        # wait for entire state response
+        while True:
+            if self.queue_system.peek(self.name):
+                message = self.queue_system.fetch_from(self.name)
+                if message and message['type'] == 'response_entire_state':
+                    grid = message['grid']
+                    break
+
+        # get the most efficient plan
+        plans = self.get_most_efficient_plan(grid)
 
         while True:
             message = self.check_mailbox()
@@ -42,7 +42,7 @@ class CognitiveAgent():
 ########################### COMMUNICATION ###########################
 
     def request_entire_state(self):
-        message = MESSAGES['request_entire_state']
+        message = {'type': 'request_entire_state'}
         self.send(ENVIRONMENT, message)
 
     def check_mailbox(self):
@@ -80,7 +80,7 @@ class CognitiveAgent():
         pass
 
     def _safe_print(self, message):
-        self.lock.acquire()
+        self.stdout_lock.acquire()
         print message
-        self.lock.release()
+        self.stdout_lock.release()
 

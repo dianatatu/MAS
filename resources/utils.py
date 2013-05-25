@@ -1,11 +1,12 @@
 from copy import copy
+from termcolor import cprint
 
 from agents.cognitive_agent import CognitiveAgent
-from constants import OBSTACLE_HEIGHT, NONE_COLOR
 from resources.cell import Cell
+from resources.constants import OBSTACLE_HEIGHT, NONE_COLOR, TD
 
 
-def parse_file(input_file,lock):
+def parse_file(input_file,lock, queue_system):
     """ Returns all necessary values parsed from the input file."""
 
     f = open(input_file, 'r')
@@ -42,7 +43,8 @@ def parse_file(input_file,lock):
 
     agents = []
     for i in range(0, N):
-        agents.append(CognitiveAgent(i, pos[i][0], pos[i][1], colors[i], lock))
+        agents.append(CognitiveAgent(i, pos[i][0], pos[i][1], colors[i],
+                                     lock, queue_system))
 
     grid = {}
     grid['H'] = H
@@ -107,6 +109,33 @@ def get_agents(i, j, agents):
         if agent.x == i and agent.y == j:
             agent_data = copy(agent.__dict__)
             agent_data.pop('queue_system')
-            agent_data.pop('lock')
+            agent_data.pop('stdout_lock')
             cell_agents.append(agent_data)
     return cell_agents
+
+
+def display_cell(cell, agents):
+    # display height
+    if cell['color'] is not NONE_COLOR:
+        cprint(' %d\t' % cell['h'], cell['color'], end='')
+        return
+    if cell['h'] < 0:
+        # hole
+        print('%d' % cell['h']),
+    elif cell['h'] == 0:
+        # tile
+        print(' %d' % cell['h']),
+    else:
+        # obstacle
+        print(' #'),
+    # display agent
+    for agent in agents:
+        if agent.x == cell['x'] and agent.y == cell['y']:
+            cprint(',%d$' % agent.points, agent.color, end='')
+            if agent.carry_tile:
+                cprint(' *' % agent.carry_tile.color, end='')
+    #display tiles
+    if cell['tiles']:
+        for tile in cell['tiles']:
+            cprint('*', tile, end='')
+    print('\t'),

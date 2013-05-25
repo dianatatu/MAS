@@ -5,6 +5,7 @@ import time
 from agents.environment import Environment
 from agents.cognitive_agent import CognitiveAgent
 from resources.constants import DEFAULT_INPUT_FILE
+from resources.kestrel_connection import KestrelConnection
 from resources.utils import parse_file
 
 
@@ -18,8 +19,11 @@ if len(sys.argv) == 2:
     input_file = sys.argv[1]
 
 # lock for stdout printing
-lock = threading.Lock()
+stdout_lock = threading.Lock()
 
+# Kestrel queue system
+queue_system = KestrelConnection(stdout_lock)
+ 
 # read input_file
 # N: the number of agents
 # t: time that it takes to perform an operation on the environment
@@ -28,12 +32,12 @@ lock = threading.Lock()
 # colors: N colors of the agents
 # pos: N zero-based integers - the initial positions of the agents
 # obstacles: pairs of coordinates for obstacles
-t, T, grid, agents = parse_file(input_file, lock)
+t, T, grid, agents = parse_file(input_file, stdout_lock, queue_system)
 #N = len(agents)
 
 # run environment agent
 threads = []
-environment = Environment(t, T, grid, agents, lock)
+environment = Environment(t, T, grid, agents, stdout_lock, queue_system)
 thread = threading.Thread(target=environment.run)
 thread.start()
 threads.append(thread)
