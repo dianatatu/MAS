@@ -1,8 +1,8 @@
 Random notes
 
-obstacles are cells with height > 0
-holes are cells with height < 0
-cells that are not holes have None color
+- obstacles are cells with height > 0
+- holes are cells with height < 0
+- cells that are not holes have None color
 
 ```python
 {'H': 4,
